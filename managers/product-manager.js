@@ -1,4 +1,3 @@
-const Product = require("../models/product");
 
 class ProductManager {
   constructor(connection) {

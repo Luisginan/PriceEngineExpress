@@ -2,7 +2,6 @@
 class LogisticManager {
     constructor(connection) {
         this.connection = connection;
-        // Add any initialization code here
     }
 
    getAverageSupplierPricebyProductId(productId) 

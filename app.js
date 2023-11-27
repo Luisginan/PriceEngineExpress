@@ -2,9 +2,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 
 const jwt = require('jsonwebtoken');
-const connection = require('./db-connector');
+const DbConnector = require('./db-connector');
 const PriceEngine = require('./managers/price-engine');
-
 
 const app = express();
 const port = 3000;
@@ -32,11 +31,17 @@ const verifyToken = (req, res, next) => {
 app.use(bodyParser.json());
 
 app.get('/price-suggestion', verifyToken, async (req, res) => {
-  const priceEngine = new PriceEngine(connection);
+  let dbConnector = new DbConnector();
+  const priceEngine = new PriceEngine(dbConnector.connection);
+
   const productId = req.query.id;
   const priceRequested = req.query.price;
+
   console.log(`Getting price suggestion for product ${productId}`);
   const priceSuggestion = await priceEngine.getPriceSuggestion(productId, priceRequested);
+  console.log(`Price suggestion for product ${productId}:`, priceSuggestion);
+  dbConnector.close()
+
   res.json(priceSuggestion);
 });
 

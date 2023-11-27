@@ -1,11 +1,9 @@
 const RfqAcceptedHistoryManager = require("./rfq-accepted-history-manager");
 const ProductManager = require("./product-manager");
 const LogisticManager = require("./logistic-manager");
-const Product = require("../models/product");
 
 class PriceEngine {
-  constructor(connection, priceRequested) {
-    this.connection = connection;
+  constructor(connection) {
     this.rfqAcceptedHistoryManager = new RfqAcceptedHistoryManager(connection);
     this.productManager = new ProductManager(connection);
     this.logisticmanager = new LogisticManager(connection);
@@ -19,6 +17,7 @@ class PriceEngine {
         await this.logisticmanager.getAverageSupplierPricebyProductId(
           productId
         );
+
       let buyingPriceSupplier = parseFloat(avgData[0].average_supplier_price);
 
       let sellingPriceRequested = priceRequested;
@@ -31,10 +30,10 @@ class PriceEngine {
       let marginCurrent = sellingPriceCurrent - buyingPriceSupplier;
       let marginFromHistorical =
         sellingPriceFromHistorical - buyingPriceSupplier;
-      let marginRequested = sellingPriceRequested - buyingPriceSupplier;
 
-      let minimumMarginPrecentage = await this.getMinimumMargin(productId);
-      let marginMinimum = (buyingPriceSupplier * minimumMarginPrecentage) / 100;
+      let marginRequested = sellingPriceRequested - buyingPriceSupplier;
+      let minimumMarginPercentage = await this.getMinimumMargin(productId);
+      let marginMinimum = (buyingPriceSupplier * minimumMarginPercentage) / 100;
 
       if (marginRequested < marginCurrent) {
         if (marginRequested < marginFromHistorical) {
