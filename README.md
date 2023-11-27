@@ -1,5 +1,4 @@
 # Price Engine Express
-# Express.js Price Engine Project
 
 This project is solution for the problem that need system to process price data and provide price recommendation. 
 
