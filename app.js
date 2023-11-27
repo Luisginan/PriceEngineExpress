@@ -2,7 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 
 const jwt = require('jsonwebtoken');
-const DbConnector = require('./db-connector');
+const DbConnector = require('./cores/db-connector');
 const PriceEngine = require('./managers/price-engine');
 
 const app = express();

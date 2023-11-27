@@ -11,74 +11,83 @@ class PriceEngine {
 
   async getPriceSuggestion(productId, priceRequested) {
     try {
-      let product = await this.productManager.getProduct(productId);
+      let parameter = await this.getParameter(productId, priceRequested);
+      let marginData = this.calculateMargin(parameter);
+      return this.calculatedBestPrice(parameter, marginData);
+    } catch (err) {
+      console.log(err);
+    }
+  }
 
-      let avgData =
-        await this.logisticmanager.getAverageSupplierPricebyProductId(
-          productId
-        );
+  async getParameter(productId, priceRequested) {
+    let product = await this.productManager.getProduct(productId);
+    let sellingPriceRequested = priceRequested;
+    let sellingPriceCurrent = parseFloat(product.price);
+    let minimumMarginPercentage = await this.getMinimumMargin(productId);
+    let purchasePrice = await this.getPurchasePrice(productId);
+    let sellingPriceFromHistorical = await this.rfqAcceptedHistoryManager.getAveragePriceByProductId(productId);
+    return {product, sellingPriceRequested, sellingPriceCurrent, minimumMarginPercentage, purchasePrice, sellingPriceFromHistorical}
+  }
 
-      let buyingPriceSupplier = parseFloat(avgData[0].average_supplier_price);
-
-      let sellingPriceRequested = priceRequested;
-      let sellingPriceFromHistorical =
-        await this.rfqAcceptedHistoryManager.getAveragePriceByProductId(
-          productId
-        );
-      let sellingPriceCurrent = parseFloat(product.price);
-
-      let marginCurrent = sellingPriceCurrent - buyingPriceSupplier;
-      let marginFromHistorical =
-        sellingPriceFromHistorical - buyingPriceSupplier;
-
-      let marginRequested = sellingPriceRequested - buyingPriceSupplier;
-      let minimumMarginPercentage = await this.getMinimumMargin(productId);
-      let marginMinimum = (buyingPriceSupplier * minimumMarginPercentage) / 100;
-
-      if (marginRequested < marginCurrent) {
-        if (marginRequested < marginFromHistorical) {
-          if (marginRequested < marginMinimum) {
-            return {
-              product: this.product,
-              purchase_price: buyingPriceSupplier,
-              margin: marginMinimum,
-              recommended_price: buyingPriceSupplier + marginMinimum,
-              price_requested: parseFloat(sellingPriceRequested),
-              price_from_historical: parseFloat(sellingPriceFromHistorical),
-            };
-          } else {
-            return {
-              product: this.product,
-              purchase_price: buyingPriceSupplier,
-              margin: marginRequested,
-              recommended_price: buyingPriceSupplier + marginRequested,
-              price_requested: parseFloat(sellingPriceRequested),
-              price_from_historical: parseFloat(sellingPriceFromHistorical),
-            };
-          }
+  calculatedBestPrice(parameter, marginData) {
+    if (marginData.marginRequested < marginData.marginCurrent) {
+      if (marginData.marginRequested < marginData.marginFromHistorical) {
+        if (marginData.marginRequested < marginData.marginMinimum) {
+          return {
+            product: parameter.product,
+            purchase_price: parameter.purchasePrice,
+            margin: marginData.marginMinimum,
+            recommended_price: parameter.purchasePrice + marginData.marginMinimum,
+            price_requested: parseFloat(parameter.sellingPriceRequested),
+            price_from_historical: parseFloat(parameter.sellingPriceFromHistorical),
+          };
         } else {
           return {
-            product: this.product,
-            purchase_price: buyingPriceSupplier,
-            margin: marginRequested,
-            recommended_price: buyingPriceSupplier + marginRequested,
-            price_requested: parseFloat(sellingPriceRequested),
-            price_from_historical: parseFloat(sellingPriceFromHistorical),
+            product: parameter.product,
+            purchase_price: parameter.purchasePrice,
+            margin: marginData.marginRequested,
+            recommended_price: parameter.purchasePrice + marginData.marginRequested,
+            price_requested: parseFloat(parameter.sellingPriceRequested),
+            price_from_historical: parseFloat(parameter.sellingPriceFromHistorical),
           };
         }
       } else {
         return {
-          product: this.product,
-          purchase_price: buyingPriceSupplier,
-          margin: marginCurrent,
-          recommended_price: buyingPriceSupplier + marginCurrent,
-          price_requested: parseFloat(sellingPriceRequested),
-          price_from_historical: parseFloat(sellingPriceFromHistorical),
+          product: parameter.product,
+          purchase_price: parameter.purchasePrice,
+          margin: marginData.marginRequested,
+          recommended_price: parameter.purchasePrice + marginData.marginRequested,
+          price_requested: parseFloat(parameter.sellingPriceRequested),
+          price_from_historical: parseFloat(parameter.sellingPriceFromHistorical),
         };
       }
-    } catch (err) {
-      console.log(err);
+    } else {
+      return {
+        product: parameter.product,
+        purchase_price: parameter.purchasePrice,
+        margin: marginData.marginCurrent,
+        recommended_price: parameter.purchasePrice + marginData.marginCurrent,
+        price_requested: parseFloat(parameter.sellingPriceRequested),
+        price_from_historical: parseFloat(parameter.sellingPriceFromHistorical),
+      };
     }
+  }
+
+  calculateMargin(parameter) {
+    let marginCurrent = parameter.sellingPriceCurrent - parameter.purchasePrice;
+    let marginFromHistorical = parameter.sellingPriceFromHistorical - parameter.purchasePrice;
+    let marginRequested = parameter.sellingPriceRequested - parameter.purchasePrice;
+    let marginMinimum = (parameter.purchasePrice * parameter.minimumMarginPercentage) / 100;
+    return { marginCurrent, marginFromHistorical, marginRequested, marginMinimum };
+  }
+
+  async getPurchasePrice(productId) {
+    let avgData =
+        await this.logisticmanager.getAverageSupplierPricebyProductId(
+            productId
+        );
+
+    return parseFloat(avgData[0].average_supplier_price);
   }
 
   async getMinimumMargin(productId) {
