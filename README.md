@@ -7,8 +7,8 @@ For this case, let’s attempt to build a pricing engine that can determine the 
 Let’s assume that we are obtaining our cost of goods sold (COGS) data from supplier price lists and reverse bids, where suppliers submit multiple bids to secure contracts by oering the lowest possible prices. You are the Engineer that is tasked to lead the development of this pricing engine.
 
 ## The Formula
-`Product Price` = purchase_price +  margin 
-`Purchase Price` = average prouct price from supplier
+- `Product Price` = purchase_price +  margin. 
+- `Purchase Price` = average prouct price from supplier.
 
 ## Prerequisites
 
