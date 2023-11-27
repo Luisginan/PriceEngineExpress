@@ -1,0 +1,39 @@
+{
+	"info": {
+		"_postman_id": "33b2bcdb-e579-45ae-b0e6-8d5d0689f315",
+		"name": "PriceEngine",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "17981"
+	},
+	"item": [
+		{
+			"name": "getPriceRecommendation",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/price-suggestion?id=1&price=600",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"price-suggestion"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "1"
+						},
+						{
+							"key": "price",
+							"value": "600"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
