@@ -77,6 +77,7 @@ The following API endpoints are available:
 - `POST /login`: Generate a token from username and password.
 
     ```JSON
+    body :
     {
         "username": "admin",
         "password": "admin"
